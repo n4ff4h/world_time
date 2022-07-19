@@ -1,11 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class WorldTime {
   String location; // Location displayed in UI
   late String time; // Time in that location
   String flag; // Url to an asset flag icon
   String url; // Location url for api endpoint
+  late bool isDayTime;
 
   WorldTime({required this.location, required this.flag, required this.url});
 
@@ -26,10 +29,15 @@ class WorldTime {
       // now.add is non-destructive(does not update object directly)
       now = now.add(Duration(hours: int.parse(offset)));
 
-      // Set the time property
-      time = now.toString();
+      // Check if it is day or night
+      isDayTime = now.hour > 6 && now.hour < 20 ? true : false;
+
+      // Format and set the time property
+      time = DateFormat.jm().format(now);
     } catch (e) {
-      print('Caught error: $e');
+      if (kDebugMode) {
+        print('error: $e');
+      }
       time = 'could not get time data';
     }
   }
