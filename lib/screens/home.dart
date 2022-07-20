@@ -13,8 +13,17 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    // Recieve data from the previous route
-    data = ModalRoute.of(context)?.settings.arguments as Map;
+    /*
+      - data will be initially empty if the state is rebuilt.
+      - Calling setState(after updating data) in line 54 triggers a state rebuild,
+        and overriden data is overriden by arguments from the previous route.
+        hence the ternary operator.
+    */
+    data = data
+            .isNotEmpty // data will not be empty if coming from choose_location screen
+        ? data
+        // Recieve data from the previous route(ie: everytime when building the state).
+        : ModalRoute.of(context)?.settings.arguments as Map;
     if (kDebugMode) {
       print(data);
     }
@@ -36,8 +45,20 @@ class _HomeState extends State<Home> {
               children: [
                 // Edit location button
                 TextButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/location');
+                  onPressed: () async {
+                    // Get data from choose_location screen(when it pops off)
+                    dynamic result =
+                        await Navigator.pushNamed(context, '/location');
+
+                    // Update home screen data
+                    setState(() {
+                      data = {
+                        'time': result['time'],
+                        'location': result['location'],
+                        'flag': result['flag'],
+                        'isDayTime': result['isDayTime'],
+                      };
+                    });
                   },
                   icon: Icon(
                     Icons.edit_location,
